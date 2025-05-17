@@ -1,11 +1,66 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>사주의 비밀 sajusecret.com</title>
-  </head>
-  <body style="text-align: center; margin-top: 100px;">
-    <h1>🔮 사주의 비밀 sajusecret.com 🔮</h1>
-    <p>무료 연애운, 궁합 운세를 지금 준비 중입니다.</p>
-    <p>곧 멋지게 오픈됩니다 🚀</p>
-  </body>
-</html>
+import { useState } from 'react';
+import Head from 'next/head';
+
+export default function Home() {
+  const [formData, setFormData] = useState({
+    name: '', phone: '', email: '', birthdate: '',
+    lunarSolar: '양력', birthTime: '모름', gender: '남',
+    partnerGender: '', partnerBirthdate: '', partnerLunarSolar: '양력', partnerBirthTime: '모름',
+    userQuestion: ''
+  });
+  const [result, setResult] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    const data = await response.json();
+    setResult(data.result);
+  };
+
+  return (
+    <>
+      <Head>
+        <title>사주의 비밀 sajusecret.com</title>
+      </Head>
+      <main style={{ textAlign: 'center', marginTop: '50px' }}>
+        <h1>🔮 사주의 비밀 sajusecret.com 🔮</h1>
+        <form onSubmit={handleSubmit}>
+          <input name="name" placeholder="이름" onChange={handleChange} required /><br />
+          <input name="phone" placeholder="연락처" onChange={handleChange} required /><br />
+          <input name="email" placeholder="이메일" onChange={handleChange} required /><br />
+          <input name="birthdate" type="date" onChange={handleChange} required /><br />
+          <select name="lunarSolar" onChange={handleChange}>
+            <option value="양력">양력</option>
+            <option value="음력">음력</option>
+          </select><br />
+          <select name="birthTime" onChange={handleChange}>
+            {["모름", "자시", "축시", "인시", "묘시", "진시", "사시", "오시", "미시", "신시", "유시", "술시", "해시"].map(time => (
+              <option key={time} value={time}>{time}</option>
+            ))}
+          </select><br />
+          <select name="gender" onChange={handleChange}>
+            <option value="남">남</option>
+            <option value="여">여</option>
+          </select><br />
+          <textarea name="userQuestion" placeholder="궁금한 점 (선택)" onChange={handleChange}></textarea><br />
+          <button type="submit">사주 해석 보기</button>
+        </form>
+        {result && (
+          <div style={{ marginTop: '30px', whiteSpace: 'pre-line' }}>
+            <h2>🔍 해석 결과</h2>
+            <p>{result}</p>
+          </div>
+        )}
+      </main>
+    </>
+  );
+}
